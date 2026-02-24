@@ -1,0 +1,14 @@
+(test
+ (name test_core)
+ (modules gen_ir test_core)
+ (libraries core_ir treewalk qcheck-core qcheck-core.runner))
+
+(test
+ (name test_layout)
+ (modules test_layout)
+ (libraries surface))
+
+(test
+ (name test_parse)
+ (modules test_parse)
+ (libraries surface zarith))

@@ -1,0 +1,3 @@
+(library
+ (name treewalk)
+ (libraries core_ir))

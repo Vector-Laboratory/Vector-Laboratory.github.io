@@ -57,7 +57,7 @@ each level's delta function in sequence.
 The compiler represents collection changes using the stdlib `Delta` type:
 
 ```
-data [a] Delta ←
+type Delta a ←
   | Insert a
   | Delete a
   | Update {old: a, new: a}
@@ -94,10 +94,10 @@ A custom `iter` hook may be annotated with `/'-CMonoid -'/`, signalling
 that the compiler should derive the delta function from the `CMonoid` trait:
 
 ```
-trait [a; r] CMonoid
-  op + : r, a → r        // combine: insert element into accumulator
-  op - : r, a → r        // remove: undo element's contribution
-  from : () → r          // zero element
+trait CMonoid a r
+  bop + : r, a → r       // combine: insert element into accumulator
+  bop - : r, a → r       // remove: undo element's contribution
+  from  : () → r         // zero element
 ```
 
 The derived delta:

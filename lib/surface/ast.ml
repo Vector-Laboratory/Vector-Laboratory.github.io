@@ -3,14 +3,27 @@
     Represents the full surface syntax of Arra before any desugaring.
     See doc/SYNTAX.md for the grammar this reflects. *)
 
+(* Bring sexp_of_string, sexp_of_int, sexp_of_list, etc. into scope so that
+   [@@deriving sexp_of] works without a Core / Base dependency. *)
+open Sexplib.Std
+
+(* Shadow Z to add sexp support — type identity is preserved via include. *)
+module Z = struct
+  include Z
+  let sexp_of_t z = Sexplib.Sexp.Atom (to_string z)
+end
+
 (** ─── Basic tokens ──────────────────────────────────────────────────────── *)
 
+(* Locations are suppressed in sexp output — the parser fills them with
+   dummy values anyway, so they add noise without information. *)
 type loc = { file : string; line : int; col : int }
+let sexp_of_loc _ = Sexplib.Sexp.Atom ""
 
-type name = string          (** lowercase identifier *)
-type ctor = string          (** uppercase identifier / constructor *)
-type tick = string          (** tick name: 'map, 'fold, 'rank, … *)
-type op   = string          (** operator symbol: +, *, ÷, … *)
+type name = string [@@deriving sexp_of]  (** lowercase identifier *)
+type ctor = string [@@deriving sexp_of]  (** uppercase identifier / constructor *)
+type tick = string [@@deriving sexp_of]  (** tick name: 'map, 'fold, 'rank, … *)
+type op   = string [@@deriving sexp_of]  (** operator symbol: +, *, ÷, … *)
 
 (** ─── Literals ──────────────────────────────────────────────────────────── *)
 
@@ -21,6 +34,8 @@ type lit =
   | LStr    of string       (** "hello" or """multiline""" *)
   | LSymbol of string       (** `bid — runtime-interned symbol *)
   | LUnit                   (** () *)
+  | LField  of string       (** .x — first-class field name *)
+[@@deriving sexp_of]
 
 (** ─── Dimension expressions (LIA) ──────────────────────────────────────── *)
 
@@ -34,6 +49,7 @@ type dim =
   | DSub  of dim * dim
   | DMul  of int * dim          (** scalar × dim — linear only *)
   | DMulD of dim * dim          (** dim × dim — non-linear, best-effort Z3 *)
+[@@deriving sexp_of]
 
 (** ─── Kind system ───────────────────────────────────────────────────────── *)
 
@@ -43,16 +59,19 @@ type kind =
   | KEffect (** effect rows *)
   | KRow    (** record row tails *)
   | KField  (** record field names *)
+[@@deriving sexp_of]
 
 (** In kind-annotation position a name may be a kind or a trait constraint. *)
 type kind_or_trait =
   | KKind  of kind
   | KTrait of name              (** e.g. (a : Functor) *)
+[@@deriving sexp_of]
 
 (** A universally-quantified type variable, optionally annotated. *)
 type tvar =
   | TVFree of name              (** kind inferred from usage *)
   | TVAnno of name * kind_or_trait  (** explicit: (a : Nat), (a : Functor) *)
+[@@deriving sexp_of]
 
 (** ─── Attributes ────────────────────────────────────────────────────────── *)
 
@@ -62,34 +81,39 @@ type attr_entry =
   | AEStr   of ctor * string    (** /'-Header "<math.h>"-'/ *)
   | AEName  of ctor * name      (** /'-Delta f-'/ *)
   | AEInt   of ctor * int       (** /'-MapTest samples:200-'/ *)
+[@@deriving sexp_of]
 
 (** An attribute block: one or more semicolon-separated entries. *)
-type attr = attr_entry list
+type attr = attr_entry list [@@deriving sexp_of]
 
 (** ─── Module paths and import filters ───────────────────────────────────── *)
 
 (** Qualified module path: Math, Math.Vector, etc. *)
-type module_path = ctor list
+type module_path = ctor list [@@deriving sexp_of]
 
 type import_item =
   | IIName  of name             (** value / function name *)
   | IIOp    of op               (** operator: (÷), (+) *)
   | IITick  of tick             (** modifier: 'map, 'fold *)
   | IIType  of ctor             (** type or module name *)
+[@@deriving sexp_of]
 
 type open_filter =
   | OFOnly   of import_item list  (** open M (f, (+), 'map) *)
   | OFHiding of import_item list  (** open M hiding (f) *)
+[@@deriving sexp_of]
 
 (** ─── Hook system ───────────────────────────────────────────────────────── *)
 
 type hook_kw =
   | HBop | HUop | HApp | HPat | HProject | HAssign | HView
-  | HIter | HGen | HFrom | HIso
+  | HIter | HGen | HFrom
+[@@deriving sexp_of]
 
 type hook_sym =
   | HSOp   of op               (** operator hook: bop +, uop - *)
   | HSTick of tick             (** tick hook: iter 'map, gen 'generate *)
+[@@deriving sexp_of]
 
 (** ─── The big mutually recursive block ──────────────────────────────────── *)
 (** Everything from here to [decl] is mutually recursive because:
@@ -118,7 +142,6 @@ and ty =
   | TDyn    of ty               (** a[] — dynamic-size array (escape hatch) *)
   | TFun    of ty * eff option * ty
   (** a →⟨e?⟩ b — single arrow; chain via nesting for curried types *)
-  | TPtr    of ty               (** Ptr a — unmanaged pointer for FFI *)
   | TUnit                       (** () — unit type *)
   | TNever                      (** ⊥ / Never — bottom type *)
   | TProduct of ty list         (** (A, B, C) — product/tuple type, ≥2 elements *)
@@ -194,17 +217,11 @@ and expr =
   | Lam         of loc * branch
   | Branches    of loc * branch list
 
-  (** Let-binding: LHS is a full pattern; both pure and effectful via ← *)
-  | Let         of loc * pat * expr * expr
-
   (** Recursive binding: rec x ← e or rec (x ← e; y ← e) — mutual *)
   | Rec         of loc * rec_binding list * expr
 
   (** Type annotation *)
   | Annot       of loc * expr * ty
-
-  (** Standalone type signature: x : T (within a program/do block) *)
-  | TypeSig     of loc * name * ty
 
   (** Tuples: (a, b, c) — ≥2 elements *)
   | Tuple       of loc * expr list
@@ -218,26 +235,17 @@ and expr =
   (** Record literal: {x = 1, y = 2} *)
   | Record      of loc * (name * expr) list
 
-  (** Field access: r.x — sugar for r .x (application of field name) *)
-  | FieldAccess of loc * expr * name
-
   (** Tuple index: t.1 — 1-indexed *)
   | TupleIdx    of loc * expr * int
 
   (** Field update: r.(x ← v; y ← w) *)
   | FieldUpdate of loc * expr * (name * expr) list
 
-  (** Effect handler: expr 'handle (ctl/op/return clauses) *)
-  | Handle      of loc * expr * handler_clause list
-
   (** Quoted program: `[expr] — produces Program T *)
   | Quoted      of loc * expr
 
   (** Unquoted splice: .(expr) — splices Program T into T-typed position *)
   | Splice      of loc * expr
-
-  (** Module open in expression / let scope: open M in body *)
-  | Open        of loc * module_path * open_filter option * expr
 
   (** Sequential / do-notation block *)
   | Do          of loc * stmt list
@@ -275,6 +283,8 @@ and stmt =
   | SExpr    of expr                   (** bare expression *)
   | SBind    of pat * expr             (** pat ← expr — pure or effectful *)
   | STypeSig of name * ty              (** type annotation within a do-block *)
+  | SRec     of rec_binding list       (** rec group within a do-block *)
+  | SOpen    of module_path * open_filter option  (** open M — scopes to rest of block *)
 
 (** ─── Recursive bindings ─────────────────────────────────────────────────── *)
 
@@ -289,13 +299,13 @@ and rec_binding =
 (** The head of a hook definition — varies by keyword.
     See doc/SYNTAX.md §9.2 for the full grammar. *)
 and hook_head =
-  | HHSym of hook_sym * name option * pat list
-  (** symbolic / tick: sym, optional effect-var [e], patterns
+  | HHSym of hook_sym * name option * pat list * ty option
+  (** symbolic / tick: sym, optional effect-var [e], patterns, optional result type
       used by: bop, uop, iter, gen, app *)
-  | HHPat of ctor * pat list
-  (** pat hook: pat Ctor patterns → Option T *)
-  | HHPos of name option * pat list
-  (** positional: optional effect-var [e], patterns
+  | HHPat of ctor * pat list * ty option
+  (** pat hook: pat Ctor patterns, optional result type *)
+  | HHPos of name option * pat list * ty option
+  (** positional: optional effect-var [e], patterns, optional result type
       used by: project, assign, view, from *)
 
 and decl =
@@ -362,21 +372,22 @@ and effect_op =
 
 (** ─── Trait signatures ───────────────────────────────────────────────────── *)
 
-(** A method signature in a trait body. *)
+(** A method signature in a trait body.
+    The result type (if any) is embedded in [ts_head] via its [ty option] field. *)
 and trait_sig =
   { ts_attrs   : attr list
   ; ts_kw      : hook_kw
   ; ts_head    : hook_head
-  ; ts_result  : ty
   ; ts_default : expr option    (** default implementation, if any *)
   }
 
 (** ─── Extern declarations ───────────────────────────────────────────────── *)
 
 and extern_body =
-  | EBSymbol of string                        (** call-form: C symbol name, must match ABI exactly *)
-  | EBExpr   of (name * ty) list * string     (** expression-body: params + C expression string *)
+  | EBSymbol of string                        (** symbol rename: alternate C symbol name *)
+  | EBExpr   of (name * ty) list * string     (** expression body: params + inline C expression string *)
+[@@deriving sexp_of]
 
 (** ─── Compilation unit ──────────────────────────────────────────────────── *)
 
-type program = { decls : decl list }
+type program = { decls : decl list } [@@deriving sexp_of]

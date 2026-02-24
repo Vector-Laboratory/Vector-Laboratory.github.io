@@ -86,7 +86,7 @@ A data type is **transparent** if its constructors are exported, and
 
 ```
 // interface block:
-data [a] Option ← None | Some a
+type Option a ← None | Some a
 // importers can pattern match on None and Some
 ```
 

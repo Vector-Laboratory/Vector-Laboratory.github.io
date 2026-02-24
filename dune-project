@@ -12,4 +12,6 @@
   (ocaml (>= 5.0.0))
   zarith
   menhir
+  sexplib
+  ppx_sexp_conv
   (qcheck-core (and :with-test (>= 0.91)))))

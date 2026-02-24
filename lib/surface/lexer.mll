@@ -47,7 +47,7 @@ let unescape s =
 
 (* ── Character classes ──────────────────────────────────────────────────── *)
 
-let lower  = ['a'-'z']
+let lower  = ['a'-'z' '_']
 let upper  = ['A'-'Z']
 let digit  = ['0'-'9']
 let hex    = ['0'-'9' 'a'-'f' 'A'-'F']
@@ -143,9 +143,9 @@ rule next lb = parse
   | "=>"       { mk (TOp "⇒") lb }
   | "<-"       { mk (TOp "←") lb }
 
-  (* ── Dot(s): .. (DOTDOT) or . (DOT) — must precede op_char+ ── *)
-  | ".."       { mk (TOp "..") lb }
-  | "."        { mk (TOp ".")  lb }
+  (* ── Dots: .. (DOTDOT) or . (DOT) — must precede op_char+ ── *)
+  | ".."                          { mk (TOp "..") lb }
+  | "."                           { mk (TOp ".")   lb }
 
   (* ── String literals ── *)
   | '"' '"' '"'

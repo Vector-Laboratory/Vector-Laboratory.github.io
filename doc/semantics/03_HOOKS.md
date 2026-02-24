@@ -296,19 +296,19 @@ delimiter. Both forms produce identical entries in the hook dispatch table
 — the block adds completeness enforcement and documents the programmer's intent
 but introduces no new runtime semantics.
 
-Traits are declared with a list of type variables `[a; b; ...]`; the
-`implementation` header supplies one concrete `type_expr` per variable,
-positionally. Single-type traits (`trait [a] Num`) take one concrete type;
-multi-type traits (`trait [a; b; r] Add`) take two or more. **Partial
+Traits are declared with one or more type variable names after the trait name;
+the `implementation` header supplies one concrete `type_expr` per variable,
+positionally. Single-type traits (`trait Num a`) take one concrete type;
+multi-type traits (`trait Add a b r`) take two or more. **Partial
 instantiation is not permitted**: every type variable in the trait's parameter
 list must be supplied with a concrete type in the `implementation` header. An
 `implementation` that omits one or more type variables is a compile error. To
 share an implementation across a family of types, use a constrained hook
-(`∀ (a : Num) ⇒ implementation Eq (List a)`) rather than a partial
+(`implementation ∀ (a : Num) ⇒ Eq (List a)`) rather than a partial
 instantiation.
 
-**Supertrait constraints**: a `type_constraint` on a `trait_def` (`∀ (a :
-Functor) ⇒ trait [a] Applicative`) declares that any type implementing the
+**Supertrait constraints**: a `type_constraint` on a `trait_def` (`trait ∀ (a :
+Functor) ⇒ Applicative a`) declares that any type implementing the
 child trait must also implement all named supertraits. The compiler enforces
 this at the `implementation` block: attempting to write `implementation
 Applicative MyType` without a prior `implementation Functor MyType` is a
@@ -343,16 +343,16 @@ the missing method and the trait that declared it abstract.
 **Worked example — diamond DAG:**
 
 ```
-trait [a] Shape
-  sig area : Self → Float ← _ → 0.0        // Shape default
+trait Shape a
+  view .area : Self → Float ← _ → 0.0        // Shape default
 
-∀ (a : Shape) ⇒ trait [a] Polygon
-  sig area : Self → Float ← _ → 1.0        // Polygon default (overrides Shape's)
+trait ∀ (a : Shape) ⇒ Polygon a
+  view .area : Self → Float ← _ → 1.0        // Polygon default (overrides Shape's)
 
-∀ (a : Shape) ⇒ trait [a] Colorable
-  sig area : Self → Float ← _ → 2.0        // Colorable default (overrides Shape's)
+trait ∀ (a : Shape) ⇒ Colorable a
+  view .area : Self → Float ← _ → 2.0        // Colorable default (overrides Shape's)
 
-∀ (a : Polygon) (a : Colorable) ⇒ trait [a] ColoredPolygon
+trait ∀ (a : Polygon) (a : Colorable) ⇒ ColoredPolygon a
   // no default for area
 ```
 
@@ -404,23 +404,23 @@ implementation Num MyNum
   from Int → MyNum ← n → ...     // literal polymorphism
 
 // Multi-type trait: mixed-type addition
-trait [a; b; r] Add
-  op + : a, b → r
+trait Add a b r
+  bop + : a, b → r
 
 // Multi-type implementation block: positional assignment a=Int, b=Float, r=Float
 implementation Add Int Float Float
-  op + ← a b → prim.int_float_add a b
+  bop + ← a b → prim.int_float_add a b
 
 // Supertrait: Applicative requires Functor
-∀ (a : Functor) ⇒ trait [a] Applicative
+trait ∀ (a : Functor) ⇒ Applicative a
   bop <*> : Self (T → U), Self T → Self U  // abstract: must be implemented
 
 // Supertrait chain: Monad requires Applicative (and transitively Functor)
-∀ (a : Applicative) ⇒ trait [a] Monad
-  op >>= : Self T, (T → Self U) → Self U   // abstract
+trait ∀ (a : Applicative) ⇒ Monad a
+  bop >>= : Self T, (T → Self U) → Self U  // abstract
 
 // Default implementation: 'const is derived from 'map (abstract in Functor)
-trait [T] Functor
+trait Functor T
   iter 'map   : Self T, (T → U) → Self U   // abstract
   iter 'const : Self T, U → Self U         // default
     ← x v → x 'map (_ → v)
@@ -448,10 +448,10 @@ must return `Self U`, not `Self`, since mapping over `Tree Int` with
 independently:
 
 ```
-trait [T] Functor
+trait Functor T
   iter 'map  : Self T, (T → U) → Self U        // type-changing element map
 
-trait [T] Foldable
+trait Foldable T
   iter 'fold : Self T, (A, T → A), A → A       // reduce with accumulator
 
 // `arr 'fold f` (two arguments) is a valid partial application of type
@@ -473,9 +473,9 @@ implementation Functor (a →)
 **`Sequence` trait** — indexed, ordered, constructible containers:
 
 ```
-trait [T] Sequence
-  from       : [T] → Self T                     // literal: [a;b;c]
-  gen     : (A → Option (A, T)), A → Self T  // unfold from seed
+trait Sequence T
+  from       : T[] → Self T                     // literal: [a;b;c]
+  gen        : (A → Option (A, T)), A → Self T  // unfold from seed
   project    : Self T, Nat → T                  // index read: s[n]
   assign     : Self T, Nat, T → Self T          // index write: s.(n←v)
 ```
@@ -483,8 +483,8 @@ trait [T] Sequence
 **`Mapping` trait** — key-value containers:
 
 ```
-trait [K; V] Mapping
-  from       : [(K, V)] → Self K V              // literal: {k:v}
+trait Mapping K V
+  from       : (K, V)[] → Self K V             // literal: {k:v}
   project    : Self K V, K → Option V           // key lookup
   assign     : Self K V, K, V → Self K V        // key insert / update
   iter 'fold : Self K V, ((K, V) → A), A → A   // fold over pairs

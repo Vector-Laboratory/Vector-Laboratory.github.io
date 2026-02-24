@@ -264,7 +264,7 @@ results. This requires a different combinator.
 This distinction is encoded through the **`Distributable` effect trait**:
 
 ```
-trait [e; a; b; n] Distributable
+trait Distributable e a b n
   iter [e] 'map a[n], (a → ⟪e⟫ b) → ⟪e⟫ b[n]    // see SYNTAX.md §5.5 for call-vector [e] syntax
 ```
 
@@ -290,7 +290,7 @@ block's compile site; a violation is a **hard compile error**.
 Law testing uses the stdlib `Testable` trait:
 
 ```
-trait [a] Testable
+trait Testable a
   gen 'gen : () → ⟪Nondet⟫ a     // generate sample values of type a
 ```
 

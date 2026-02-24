@@ -11,4 +11,4 @@
 (test
  (name test_parse)
  (modules test_parse)
- (libraries surface zarith))
+ (libraries surface zarith sexplib))

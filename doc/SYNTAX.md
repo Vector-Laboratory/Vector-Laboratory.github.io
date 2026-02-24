@@ -917,7 +917,7 @@ proj_arg = lambda
          | '(' program ')'
          | handler_block
 
-lambda = pattern_atom guard? '→' program   (* unparenthesised lambda in proj_arg position *)
+lambda = pattern_atom ('when' expr)? '→' program
 
 handler_block  = '(' handler_clause (';' handler_clause)* ')'
 handler_clause = 'ctl' lower pattern* '→' program
@@ -942,8 +942,9 @@ resolved by two rules applied in order:
 > **Lambda rule**: after a tick, if the next tokens form a valid `pattern_atom`
 > immediately followed by `→` or `when`, parse as an unparenthesised `lambda`.
 > `lambda` is first in the `proj_arg` ordered choice, so this takes priority.
-> Valid unparenthesised lambda heads: `_`, a `lower`, a nullary or unary `upper`,
-> a parenthesised pattern, a `[`-pattern, a `{`-pattern, or a literal.
+> Valid unparenthesised lambda heads: `_`, a `lower`, an `upper`, or a literal.
+> A guarded lambda `x when cond → body` is partial; pair with `'handle` to
+> cover the non-matching case.
 
 > **Two-consecutive-lower rule**: after a tick, if the next token is a `lower`
 > and the token immediately following it is also a `lower` (and not `→` or
@@ -1402,9 +1403,12 @@ hook_kw   = 'bop' | 'uop' | 'iter' | 'gen'
               | 'app' | 'project' | 'assign' | 'view'
               | 'pat' | 'from'
 
-hook_head = (op | tick) effect_param? pattern (',' pattern)*  (* symbolic/tick forms *)
-              | upper pattern (',' pattern)*                      (* pat hooks *)
-              | effect_param? pattern (',' pattern)*              (* project / from / assign / view *)
+hook_head = (op | tick) effect_param? pattern (',' pattern)* ('→' type)?  (* symbolic/tick *)
+              | upper pattern (',' pattern)* ('→' type)?                      (* pat hooks *)
+              | effect_param? pattern (',' pattern)* ('→' type)?              (* project / from / assign / view *)
+
+(* '→' type is an optional result type annotation on the hook head.
+   Omitting it leaves the result type to be inferred. *)
 
 effect_param  = '[' lower ']'         (* effect variable: [e] *)
 
@@ -1654,13 +1658,14 @@ effects). It is not valid inside `trait` bodies.
 ### 9.5 Trait Definitions and Implementations
 
 ```ebnf
-trait_def = type_constraint? 'trait' upper lower* '(' sig+ ')'
+trait_def = 'trait' type_constraint? upper lower* '(' sig+ ')'
 
-sig = sym_hook_kw (op | tick) effect_param? ':' pattern (',' pattern)* ('←' program)?
-    | 'pat' upper ':' pattern (',' pattern)*                            ('←' program)?
-    | 'from' effect_param? ':' pattern                                  ('←' program)?
+sig = sym_hook_kw (op | tick) effect_param? ':' pattern (',' pattern)* ('→' type)? ('←' program)?
+    | 'pat' upper ':' pattern (',' pattern)* ('→' type)?               ('←' program)?
+    | 'from' effect_param? ':' pattern ('→' type)?                     ('←' program)?
+    (* '→' type is the optional result type annotation; omit to infer *)
     (* '←' body is optional: absent = abstract method; present = default implementation *)
-    (* source type for 'from; result is Self (or Self T*) *)
+    (* source type for 'from'; result type is Self (or Self T*) unless '→' is given *)
 
 sym_hook_kw = 'bop' | 'uop' | 'iter' | 'gen'
             | 'app' | 'project' | 'assign' | 'view'
@@ -1701,11 +1706,11 @@ trait Functor f
     ← x v → x 'map (_ → v)
 
 // Supertrait chain: Applicative requires Functor; Monad requires Applicative
-∀ (a : Functor) ⇒ trait Applicative f
+trait ∀ (a : Functor) ⇒ Applicative f
   bop <*> : Self (t → u), Self t → Self u
 
-∀ (a : Applicative) ⇒ trait Monad f
-  op >>= : Self t, (t → Self u) → Self u
+trait ∀ (a : Applicative) ⇒ Monad f
+  bop >>= : Self t, (t → Self u) → Self u
 
 trait Foldable f
   iter 'fold : Self t, (a, t → a), a → a   // reduce with accumulator
@@ -1933,19 +1938,20 @@ expression body for macro wrapping. The compiler emits an `Extern` node in
 Core (see CORE.md §8.3).
 
 ```ebnf
-extern_def   = extern_attr* 'extern' '"C"' extern_sig
+extern_def   = extern_attr* 'extern' '"C"'? extern_sig
 extern_sig   = lower ':' type                             (* symbol call form *)
-             | lower param_list '=' string ':' type       (* expression body form *)
+             | lower ':' type '←' string                  (* C symbol rename form *)
+             | lower param_list ':' type '←' string       (* expression body form *)
 param_list   = '(' (lower ':' type (',' lower ':' type)*)? ')'
 extern_attr  = '/\'-Pure-\'/'
              | '/\'-Header' string '-\'/'
 ```
 
-The `/'-Header "..."-'/` attribute injects an `#include` into the generated C
-file, making `static inline` definitions visible to the C compiler at the call
-site. Since Arra emits C, the C compiler handles inlining freely across the
-boundary — this attribute is how you make that possible for header-only
-definitions. See SEMANTICS.md §9.1 for the framing.
+The `"C"` call-convention marker is optional; it is accepted and ignored (Arra
+only targets C). The `/'-Header "..."-'/` attribute injects an `#include` into
+the generated C file, making `static inline` definitions visible to the C
+compiler at the call site. Since Arra emits C, the C compiler handles inlining
+freely across the boundary. See SEMANTICS.md §9.1 for the framing.
 
 All C pointers use `Ptr a`; see SEMANTICS.md §9 for the type mapping.
 
@@ -1955,6 +1961,9 @@ extern "C" malloc : Nat → Ptr Byte
 extern "C" free   : Ptr Byte → ()
 extern "C" fwrite : Ptr Byte, Nat, Ptr File → Nat
 
+// Rename: bind Arra name `myAlloc` to C symbol `malloc`
+extern myAlloc : Nat → Ptr Byte ← "malloc"
+
 // Attribute-block: /'-Header-'/ and /'-Pure-'/ apply to all three
 /'-Header "<math.h>"-'/ /'-Pure-'/ (
   extern "C" sin  : Float → Float
@@ -1962,8 +1971,8 @@ extern "C" fwrite : Ptr Byte, Nat, Ptr File → Nat
   extern "C" sqrt : Float → Float
 )
 
-// Per-declaration when headers differ
-/'-Header "<stddef.h>"-'/ extern "C" offsetof_sym (t : Trade) = "offsetof(Trade, sym)" : Nat
+// Expression body: inline C macro wrapper
+/'-Header "<stddef.h>"-'/ extern "C" offsetof_sym (t : Trade) : Nat ← "offsetof(Trade, sym)"
 /'-Header "<x86intrin.h>"-'/ extern "C" rdtsc : () → Nat
 ```
 

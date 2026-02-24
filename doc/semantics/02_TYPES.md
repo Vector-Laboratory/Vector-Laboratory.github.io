@@ -466,8 +466,8 @@ include `Nat`-kinded type parameters, making the declared type a type constructo
 of kind `Nat → Type` (or `Nat → Nat → Type`, etc.):
 
 ```
-type [n] Buffer ← { data: Byte[n] }       // Buffer : Nat → Type
-type [n; m] Matrix ← { data: Float[n; m] } // Matrix : Nat → Nat → Type
+type Buffer n ← { data: Byte[n] }         // Buffer : Nat → Type
+type Matrix n m ← { data: Float[n; m] }   // Matrix : Nat → Nat → Type
 ```
 
 Kind inference in `type` bodies uses the same rules as signatures: if a

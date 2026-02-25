@@ -54,7 +54,9 @@ Arra draws heavily from prior work. The following is a precise accounting.
 
 **APL, J, K, Q** — the array model, rank polymorphism, symbolic operators, tick-prefixed modifiers, and the columnar data orientation are all inherited from the APL lineage. Arra adopts LTR evaluation order rather than the traditional RTL, following Q's pipeline style but making it the universal rule rather than a convention.
 
-**Haskell** — traits are typeclasses. The `∀ ⇒` constraint syntax, kind system, and row polymorphism are all Haskell-derived. The specificity ordering in hook resolution is a restricted form of instance resolution.
+**Haskell** — traits are typeclasses. The `∀ ⇒` constraint syntax, and kind system, are all Haskell-derived. The specificity ordering in hook resolution is a restricted form of instance resolution.
+
+**Ur/Web** — row polymorphism and typeclass plus module complementation.
 
 **Koka** — the algebraic effect system with row-typed effects, the `ctl`/`op` distinction between non-resumable and resumable operations, and the effect-polymorphic function types are taken directly from Koka.
 

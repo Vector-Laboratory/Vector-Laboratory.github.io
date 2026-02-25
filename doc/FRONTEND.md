@@ -152,7 +152,7 @@ same fix: add a type annotation to the binding.
 **Trains are fully subsumed by this pass.** Atop (2-train: `f g` where both
 are functions) falls out of the quasi-concatenative grammar and the
 `Functor (a →)` instance — no compiler pass required. Forks (3-train) are
-this pass. Tick modifier sections (§4.3 of semantics/04_TRAINS.md) are
+this pass. Tick modifier sections ([§4.3 of semantics/04_TRAINS.md](semantics/04_TRAINS.md#43-tick-modifier-sections-and-point-free-pipelines)) are
 first-class functions that compose via `∘`; no special handling is needed.
 No separate train rewriting pass exists or is needed.
 
@@ -554,7 +554,7 @@ dependency DAG is invalidated upfront. Correct by construction; simpler than
 lazy partial invalidation. The transitive closure of a typical change is small;
 the expensive case (widely-imported stdlib change) is rare and expected to be
 slow. Batch compilation uses per-module granularity (simpler; consistent with
-semantics/01_EXECUTION.md §1.4); the snapshot machinery exposes both.
+[semantics/01_EXECUTION.md §1.4](semantics/01_EXECUTION.md#14-compilation-model)); the snapshot machinery exposes both.
 
 **Dependency DAG:** direct syntactic dependencies at the definition level —
 names appearing free in the definition body. The DAG is built during

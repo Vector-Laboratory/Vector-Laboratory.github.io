@@ -37,7 +37,7 @@ eliminating intermediate states.
 
 A `derived` declaration defines an **incrementally-maintained view** — a named
 value the compiler keeps consistent with its source `⟪State⟫` cell(s) as they
-change. See SYNTAX.md §9.9 for the surface syntax.
+change. See [SYNTAX.md §9.9](../SYNTAX.md#99-derived-view-definitions) for the surface syntax.
 
 ```
 derived byEmployer   ← db.employments 'groupby .employer
@@ -127,7 +127,7 @@ The `CMonoid` accumulator type may differ from the user-visible result type:
 
 In debug builds, the compiler verifies the identity law (`(acc + x) - x = acc`)
 and commutativity (`(acc + x) + y = (acc + y) + x`) as property-based tests
-at the definition site using the `Testable` protocol (05_EFFECTS.md §5.3) to generate sample
+at the definition site using the `Testable` protocol ([05_EFFECTS.md §5.3](05_EFFECTS.md#53-effect-polymorphic-array-operations)) to generate sample
 values. A failing test is a **compile error**; if the accumulator type does not
 implement `Testable`, a warning is emitted and the test is skipped.
 
@@ -259,7 +259,7 @@ unrecoverable arithmetic error or a violated invariant):
 3. The failure is reported to the event handler's caller as a `⟪Fail DeltaError⟫`
    effect, where `DeltaError` is a stdlib type carrying the delta function name,
    the view name, and the triggering `Delta` value. The caller handles it via the
-   standard handler mechanism (05_EFFECTS.md §5.1.2), yielding a `Result DeltaError ()` or
+   standard handler mechanism ([05_EFFECTS.md §5.1.2](05_EFFECTS.md#512-effect-handlers)), yielding a `Result DeltaError ()` or
    propagating the failure further.
 
 Delta failures are programming bugs, not expected control flow. A delta
@@ -295,7 +295,7 @@ multiple modes specifying which arguments are inputs and outputs.
 The determinism of each mode is its effect type (`⟪Fail⟫` for semidet,
 `⟪Nondet⟫` for nondeterministic). The compiler verifies that all declared
 modes are correctly implemented and that call sites are consistent with the
-mode of the predicate being called (see 05_EFFECTS.md §5.4).
+mode of the predicate being called (see [05_EFFECTS.md §5.4](05_EFFECTS.md#54-nondeterminism-as-an-effect)).
 
 **Multi-mode predicates are multiple hooks.** Because all Arra arguments
 are values (there are no unbound logical variables), different modes of a
@@ -313,7 +313,7 @@ implement the same abstract relation — is a **programmer obligation**, not
 compiler-enforced. The type system verifies each mode hook independently;
 proving that two hooks agree on the same mathematical relation is
 undecidable in general. This is the same position as `Distributable` law
-verification (05_EFFECTS.md §5.3): the contract is documented, not mechanically checked.
+verification ([05_EFFECTS.md §5.3](05_EFFECTS.md#53-effect-polymorphic-array-operations)): the contract is documented, not mechanically checked.
 
 > **Future**: a `/'-Modes-'/` attribute could group named hooks as modes
 > of the same relation, enabling the compiler to generate property-based test

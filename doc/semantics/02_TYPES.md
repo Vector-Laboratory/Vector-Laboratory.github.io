@@ -188,7 +188,7 @@ The columnar law extends to nested paths: `(r[n]).a.b = r.a[n].b = r.a.b[n]`
 
 Row types interact with hook dispatch: a function may be polymorphic over
 the fields present in a record, constrained by the row type system. The orphan
-rule (03_HOOKS.md §3.4) applies to row-polymorphic hooks.
+rule ([03_HOOKS.md §3.4](03_HOOKS.md#34-orphan-rule)) applies to row-polymorphic hooks.
 
 **Row constraint kinds — `rest : Row` vs. `rest : Type`:**
 
@@ -238,7 +238,7 @@ forms, giving explicit control over the erasing/nominal trade-off:
   // compiler auto-generates:
   // from Trade → {sym: Symbol, price: Float, ts: Timestamp} ← prim.unwrap
   ```
-  The `from` coercion fires implicitly in output-dispatch positions (03_HOOKS.md §3.5.2),
+  The `from` coercion fires implicitly in output-dispatch positions ([03_HOOKS.md §3.5.2](03_HOOKS.md#352-output-dispatch-from-gen-and-iso)),
   making `Trade` structurally compatible with `rest : Row` functions. It is
   zero-cost when field layout is canonical (default lexicographic order); if
   `/'-FieldOrder-'/` reorders fields, the coercion requires a field shuffle and
@@ -293,7 +293,7 @@ or generated.
 distinct type with the same runtime representation. Distinct types are required
 when defining instances (hooks or trait implementations) for types you do
 not own — they are Arra's **newtype wrapper** pattern for implementing external
-traits. See 03_HOOKS.md §3.4.
+traits. See [03_HOOKS.md §3.4](03_HOOKS.md#34-orphan-rule).
 
 ## 2.5 Dependent Dimension Types
 
@@ -478,7 +478,7 @@ parameter that appears in both positions is a kind error.
 User-defined `Nat`-parameterised types participate fully in the Z3 constraint
 system. A function `concat : Buffer n → Buffer m → Buffer (n+m)` generates the
 same LIA constraint as `concat : a[n] → a[m] → a[n+m]` — Z3 handles both
-identically. The specificity ordering (03_HOOKS.md §3.2) extends to `Nat` parameters in
+identically. The specificity ordering ([03_HOOKS.md §3.2](03_HOOKS.md#32-specificity-ordering)) extends to `Nat` parameters in
 user types using the same rules as array dimension slots: `Buffer 3` is more
 specific than `Buffer n`, which is more specific than an unconstrained `Buffer`
 with no size parameter.
@@ -512,7 +512,7 @@ a different kind or a separate parser production.
 While `Field`-kinded *variables* range over all possible field names at compile
 time, concrete field name literals (`.x`, `.name`) are additionally ground
 `Field` *values* at runtime — interned tokens. The stdlib `from Field →
-function` hook (03_HOOKS.md §3.5.2) coerces a concrete `Field` value to its
+function` hook ([03_HOOKS.md §3.5.2](03_HOOKS.md#352-output-dispatch-from-gen-and-iso)) coerces a concrete `Field` value to its
 corresponding accessor function `{x: T | rest} → T` when the type context
 demands a function. Field-kinded variables in `∀` binders benefit from the
 same coercion at call sites where a function type is expected.

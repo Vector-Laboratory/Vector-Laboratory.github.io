@@ -59,7 +59,7 @@ List, HashMap, BTreeMap, …) is selected by type annotation or inference.
      that is ambiguous here is already a type error for other reasons.
    `project` and `assign` are distinguished by their field/index argument form.
    `app` fires in call position; `pat` fires in pattern position; `from` /
-   `gen` fire when the result type drives resolution. See SYNTAX.md §6 for
+   `gen` fire when the result type drives resolution. See [SYNTAX.md §6](../SYNTAX.md#6-projections) for
    parsing rules, including the two-consecutive-lower rule that resolves the
    `tick lower lower` ambiguity.
 2. **Specificity ordering**: within the selected pool, the most specific
@@ -250,7 +250,7 @@ that defines **either** the operator/trait **or** at least one of the types
 involved. Definitions satisfying neither condition are orphans and are rejected.
 
 To implement an external trait for an external type, wrap the external type in a
-`distinct` (see 02_TYPES.md §2.4) — this is the **newtype wrapper** pattern. The `distinct`
+`distinct` (see [02_TYPES.md §2.4](02_TYPES.md#24-distinct-types)) — this is the **newtype wrapper** pattern. The `distinct`
 declaration creates a new nominal type owned by the declaring module. Ownership
 of the `distinct` wrapper counts as ownership of a type involved in the
 implementation: `implementation ExternalTrait MyWrapper` is valid because the
@@ -278,7 +278,7 @@ special case is needed.
 
 Traits and hooks are two views of the same mechanism. A `trait` declaration
 names a bundle of hook signatures that a set of types must provide together.
-An `implementation` block (SYNTAX.md §9.5) declares that a concrete assignment
+An `implementation` block ([SYNTAX.md §9.5](../SYNTAX.md#95-trait-definitions-and-implementations)) declares that a concrete assignment
 of types to the trait's type variables satisfies all of those signatures,
 enabling the compiler to verify completeness.
 
@@ -463,7 +463,7 @@ trait Foldable T
 
 The function type `(a →)` is itself a `Functor`: mapping over `(a → T)` with
 `(T → U)` yields `(a → U)` — function composition. This instance grounds the
-atop and fork rules (04_TRAINS.md §4.2):
+atop and fork rules ([04_TRAINS.md §4.2](04_TRAINS.md#42-forks-operator-lifting)):
 
 ```
 implementation Functor (a →)
@@ -567,7 +567,7 @@ function is expected (e.g. `arr 'map .x`, where `iter 'map` demands `a → b`).
 `from` does not fire when the type context expects `Field` directly — field
 arguments to `project`, `assign`, and generic `∀ (f : Field) ⇒` functions
 receive the token without coercion. The `(.x)` section form is syntactic sugar
-for `(from .x)`. See SYNTAX.md §5.3.
+for `(from .x)`. See [SYNTAX.md §5.3](../SYNTAX.md#53-field-names).
 
 **`iso` — bidirectional coercion with round-trip laws**: `iso` declares both
 directions of an isomorphism in a single block, ensuring that the two generated
@@ -691,7 +691,7 @@ circles 'filter (.area > 10.0)
 ## 3.6 User-Defined Symbolic Operators
 
 Users may define operators using any Unicode code point that is a valid
-`op_char` (see SYNTAX.md §1.2). User-defined operators are semantically
+`op_char` (see [SYNTAX.md §1.2](../SYNTAX.md#12-operators)). User-defined operators are semantically
 identical to built-in operators: they are hooks dispatched by the standard
 specificity ordering (§3.2), participate in the orphan rule (§3.4), and may
 appear in sections `(÷)` or infix projection chains `arr ÷ 2`.
@@ -798,4 +798,4 @@ between guarded branches is checked per match expression — Z3 tests whether
 branches overlap and the compiler rejects the match. Non-Z3-linear guards
 (e.g. `when isPrime k`) cannot be proved disjoint; two such guards in the
 same match is a compile error unless one is subsumed by a `_` residual.
-(See SYNTAX.md §5.3 for surface syntax.)
+(See [SYNTAX.md §5.3](../SYNTAX.md#53-field-names) for surface syntax.)

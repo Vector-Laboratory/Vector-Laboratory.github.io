@@ -42,14 +42,14 @@ module boundary.
 - Effect declarations: `effect ...`
 - Trait declarations: `trait ...`
 - `derived` declarations: name and type signature only, exposing a read-only
-  projection to importers (see 06_REACTIVE.md §6.5)
+  projection to importers (see [06_REACTIVE.md §6.5](06_REACTIVE.md#65-exported-derived-values))
 - Re-exported imports: `open OtherModule`
 
 **Implementation block** — definitions and private declarations:
 
 - Value bindings: `name ← expr`
 - Hook definitions: `op`, `uop`, `iter`, `gen`, `app`, `project`, `assign`, `pat`, `from`
-- `derived` definitions: full expressions with incremental maintenance (see 06_REACTIVE.md §6.2)
+- `derived` definitions: full expressions with incremental maintenance (see [06_REACTIVE.md §6.2](06_REACTIVE.md#62-derived-declarations))
 - Implementation blocks: `implementation TraitName ConcreteType ( ... )`
 - Private helpers not in the interface (no type signature in interface)
 - Private nested modules
@@ -74,7 +74,7 @@ nested modules: `Outer.Inner.name`.
 
 **Circular imports are forbidden.** The module dependency graph must be a DAG.
 The compiler rejects any import that would create a cycle. This preserves the
-incremental invalidation model (01_EXECUTION.md §1.4) and the hook finalization guarantee
+incremental invalidation model ([01_EXECUTION.md §1.4](01_EXECUTION.md#14-compilation-model)) and the hook finalization guarantee
 (§8.5).
 
 ## 8.4 Abstract Types
@@ -104,13 +104,13 @@ data Map k v ← Leaf | Node (Map k v) k v (Map k v)
 
 Abstract types are the primary data-hiding mechanism. Public API is exposed
 via type signatures in the interface block (smart constructors, accessors,
-hooks). The `distinct` mechanism (02_TYPES.md §2.4) works identically:
+hooks). The `distinct` mechanism ([02_TYPES.md §2.4](02_TYPES.md#24-distinct-types)) works identically:
 declare the distinct type in the interface, define it in the implementation if
 the underlying type should be hidden.
 
 ## 8.5 Modules as Coherence Boundaries
 
-Modules are the unit of coherence for the orphan rule (03_HOOKS.md §3.4). The compiler
+Modules are the unit of coherence for the orphan rule ([03_HOOKS.md §3.4](03_HOOKS.md#34-orphan-rule)). The compiler
 tracks, for each hook and trait implementation, which module defines it and
 whether that module owns the relevant operator/trait and/or types involved.
 
@@ -128,11 +128,11 @@ B's own call sites — they do not reach back into A.
 
 The whole-program compiler uses this guarantee to resolve all hooks
 statically at every call site — no runtime dispatch tables are generated.
-Specialization (01_EXECUTION.md §1.3) instantiates type variables within the hook resolution
+Specialization ([01_EXECUTION.md §1.3](01_EXECUTION.md#13-value-level-dispatch-and-specialization)) instantiates type variables within the hook resolution
 already established by the containing module's scope; it does not change which
 hook fires, only what concrete types it is applied to.
 
-**Interaction with `Program T` (07_METAPROG.md §7.3)**: quoted expressions use the hooks
+**Interaction with `Program T` ([07_METAPROG.md §7.3](07_METAPROG.md#73-program-t-as-a-stdlib-type))**: quoted expressions use the hooks
 visible at the quote site, consistent with the per-module rule. Splicing a
 `Program T` into a downstream module does not re-resolve its hooks against
 the downstream scope.
@@ -146,7 +146,7 @@ by a trait bound (e.g., `Num`), and B's more-specific hook is reached
 correctly through the trait's dispatch mechanism at B's own call sites. No
 optimization opportunity is lost.
 
-The compilation model (01_EXECUTION.md §1.4) means module boundaries are not compilation
+The compilation model ([01_EXECUTION.md §1.4](01_EXECUTION.md#14-compilation-model)) means module boundaries are not compilation
 barriers. The compiler sees all modules simultaneously; modules are
 organizational and coherence units, not optimization fences.
 

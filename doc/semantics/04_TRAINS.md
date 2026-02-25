@@ -123,7 +123,7 @@ clamp : min % max        // dyadic:  (min x y) % (max x y)
 ```
 
 **Opt-out**: to apply an operator to two function *values* without forking,
-use a call vector — `⟦f; g⟧ op` (see SYNTAX.md §5.5). Call vectors are
+use a call vector — `⟦f; g⟧ op` (see [SYNTAX.md §5.5](../SYNTAX.md#55-quoted-programs)). Call vectors are
 explicit calls that bypass
 `sym_proj` entirely; fork detection never fires. This is the natural escape
 hatch when an `op` hook for function-typed arguments is genuinely intended.
@@ -135,11 +135,11 @@ registration is needed.
 
 ## 4.3 Tick Modifier Sections and Point-Free Pipelines
 
-Tick modifier sections (SYNTAX.md §5.4) are first-class functions. A right
+Tick modifier sections ([SYNTAX.md §5.4](../SYNTAX.md#54-sections-and-first-class-symbolic-forms)) are first-class functions. A right
 section `('map f)` has type `a[n] → b[n]` when `f : a → b`; it is exactly
 the function `arr → arr 'map f`. All four section forms are valid for any
-tick modifier except `'handle` (which has its own restriction — see SYNTAX.md
-§5.4).
+tick modifier except `'handle` (which has its own restriction — see [SYNTAX.md
+§5.4](../SYNTAX.md#54-sections-and-first-class-symbolic-forms)).
 
 Because tick sections are ordinary functions, they compose via `∘` (atop,
 §4.1) without requiring an explicit array argument:

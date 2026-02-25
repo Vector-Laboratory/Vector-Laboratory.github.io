@@ -62,7 +62,7 @@ built-in. Local state is handled by an ordinary `'handle` block that
 initialises the cell; for global reactive cells the runtime installs a
 system-level handler that wires `get`/`put` to the live data store. Either
 way, the user's type signature simply mentions `⟪State S⟫` and `derived`
-definitions are transparent (see SYNTAX.md §9.9).
+definitions are transparent (see [SYNTAX.md §9.9](../SYNTAX.md#99-derived-view-definitions)).
 
 Effect operations are **ordinary functions** in scope once the effect is
 declared. Calling an operation propagates its effect into the caller's type
@@ -215,7 +215,7 @@ composition is function composition. No new type or syntax is required.
 **Forward-compatible design (Option C).** A first-class `Handler E1 E2 A R`
 type enabling handler values independent of any specific computation is a
 possible future extension. The syntax is already forward-compatible: in
-SYNTAX.md §6, `handler_block` is a valid `proj_arg`, so the parser accepts
+[SYNTAX.md §6](../SYNTAX.md#6-projections), `handler_block` is a valid `proj_arg`, so the parser accepts
 all four tick section forms for `'handle` — bare-tick `('handle)`,
 left-section `(computation 'handle)`, right-section `('handle (...))`,
 and the tick-plus-value form. The type checker currently rejects the first
@@ -513,7 +513,7 @@ optimization opportunities are visible across module boundaries.
 
 `⟪CompileTime⟫` is a first-class effect marking computation that executes in
 the compiler process rather than at program runtime. It is the required effect
-of any function whose result appears in a top-level `.( )` splice (see 07_METAPROG.md §7).
+of any function whose result appears in a top-level `.( )` splice (see [07_METAPROG.md §7](07_METAPROG.md#7-quoted-programs-and-compile-time-computation)).
 
 `⟪CompileTime⟫` is **disjoint** from all runtime effects — there is no
 implicit lifting and no `liftIO`-style bridge. A `⟪IO⟫` function cannot be

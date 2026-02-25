@@ -35,7 +35,7 @@ algebraic effects.
   compile-only permanently. **Decision: compile-only initially; dynamic loading
   in a later phase.** Once the REPL is a primary development surface, call-form
   `Extern` nodes will be supported via `dlopen`/`dlsym` at startup and OCaml
-  ctypes for dispatch (the type mapping table in semantics/09_FFI.md §9.4 doubles
+  ctypes for dispatch (the type mapping table in [semantics/09_FFI.md §9.4](semantics/09_FFI.md#94-type-mapping) doubles
   as the ctypes descriptor spec). Expression-body externs (macro wrapping) cannot
   be evaluated at OCaml runtime without a C compiler; the treewalk error message
   at an expression-body site makes this distinction explicit. The QCheck harness
@@ -78,7 +78,7 @@ Runs after monomorphization; annotations consumed by the fusion passes.
 
 The fusion passes in §2.3 and §2.4 operate by pattern-matching on **SOAC
 primitive markers** (`prim.vec_map`, `prim.vec_filter`, `prim.vec_fold`, etc. —
-see CORE.md §8.2). User loops written with raw `prim.vec_get`/`prim.vec_set`
+see [CORE.md §8.2](CORE.md#82-soac-primitive-markers)). User loops written with raw `prim.vec_get`/`prim.vec_set`
 and all `Extern` FFI calls are **fusion-opaque** and pass through unchanged.
 
 Unconditional term rewrites at the IR level, before structural analysis. Always
@@ -293,7 +293,7 @@ Emits C for the structural parts of the program.
   debug builds for consistency assertions against delta results
 - **FFI call-form** — direct C function call at each use site
 - **FFI expression-body** — fresh C block with re-bound argument locals
-  followed by the injected expression string; see semantics/09_FFI.md §9.5
+  followed by the injected expression string; see [semantics/09_FFI.md §9.5](semantics/09_FFI.md#95-expression-body-externs)
 
 **GC pinning.** Only `Ptr` and pinned-arena-allocated types are valid at FFI
 call sites. The emitter never pins arbitrary heap objects — GC-managed values
@@ -383,5 +383,5 @@ shrink to minimal programs.
 ### Loop IR
 
 A structured loop representation between the fusion passes and C emission.
-See `doc/LOOP-IR.md` for the full design. This is a later phase and does not
+See [LOOP-IR.md](LOOP-IR.md) for the full design. This is a later phase and does not
 affect Core's design. Tracked here as the primary long-term backend work item.

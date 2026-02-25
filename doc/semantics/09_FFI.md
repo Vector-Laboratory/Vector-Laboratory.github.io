@@ -4,7 +4,7 @@
 
 `extern "C"` declarations bind C symbols. The type checker treats them as
 ordinary Arra values with the declared type; the compiler emits direct C calls
-at each use site. See SYNTAX.md §9.10 for declaration syntax and CORE.md §8.3
+at each use site. See [SYNTAX.md §9.10](../SYNTAX.md#910-extern-declarations) for declaration syntax and [CORE.md §8.3](../CORE.md#83-ffi--extern-declarations)
 for the `Extern` Core node.
 
 **The C-to-C boundary.** Arra's backend emits C. At an `Extern` call site the
@@ -86,8 +86,8 @@ unboxed is a type error.
 
 Only `Ptr` and pinned-arena-allocated types are valid at FFI call sites.
 GC-managed arrays require an explicit `.pin` or `.copy` call at the boundary;
-the emitter never pins heap objects implicitly. See BACKEND.md §5 for the
-emission rules and BACKEND.md §8 for callback lowering.
+the emitter never pins heap objects implicitly. See [BACKEND.md §5](../BACKEND.md#5-c-emission) for the
+emission rules and [BACKEND.md §8](../BACKEND.md#8-open-questions) for callback lowering.
 
 ## 9.5 Expression-body Externs
 
@@ -131,7 +131,7 @@ a `static inline` C function called via the call-form `extern`; the call-form
 
 `/'-Header "..."-'/` on an `extern` declaration arranges for the named C header
 to be included at that declaration's call sites. When many `extern` declarations
-share a header, the attribute-block form (SYNTAX.md §1.5) avoids repetition:
+share a header, the attribute-block form ([SYNTAX.md §1.5](../SYNTAX.md#15-attributes)) avoids repetition:
 
 ```
 /'-Header "<math.h>"-'/ /'-Pure-'/ (

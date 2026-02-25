@@ -263,8 +263,8 @@ by backends; they do not appear in the treewalk interpreter.
 SOAC primitives are **not irreducible** — they are semantic markers placed in
 Core by the frontend to signal structure that the fusion passes can act on.
 The treewalk interprets them as ordinary structural recursion; the compiler
-recognizes them as fusion targets in Layer 1 and Layer 2 (see BACKEND.md §2.3,
-§2.4).
+recognizes them as fusion targets in Layer 1 and Layer 2 (see [BACKEND.md §2.3](BACKEND.md#23-layer-1--algebraic-rewriting),
+[§2.4](BACKEND.md#24-layer-2--soac-fusion)).
 
 User code that avoids these forms — writing raw `prim.vec_get`/`prim.vec_set`
 loops — is valid but **fusion-opaque**: the compiler cannot fuse it.
@@ -302,7 +302,7 @@ C expression directly. Since the output is C, the C compiler sees both the
 Arra-generated code and the FFI implementation simultaneously and applies its
 full optimization budget — inlining, constant folding, CSE — across the
 boundary. Inlining is the C compiler's domain, not Arra's. The
-`/'-Header "..."-'/` attribute (SYNTAX.md §9.10) tells the emitter which
+`/'-Header "..."-'/` attribute ([SYNTAX.md §9.10](SYNTAX.md#910-extern-declarations)) tells the emitter which
 `#include` to inject so that `static inline` definitions are visible to the C
 compiler at the call site.
 
@@ -323,11 +323,11 @@ freely — Arra makes no attempt to prevent or direct this.
 emitter injects the expression directly at the call site rather than emitting a
 function call. This is the mechanism for wrapping C macros that are not
 callable as functions. Argument binding into the expression string is an open
-question (semantics/09_FFI.md §9.5).
+question ([semantics/09_FFI.md §9.5](semantics/09_FFI.md#95-expression-body-externs)).
 
 **`Ptr` type:** C pointer arguments and return values use `Ptr a` — an opaque
 pointer type not subject to GC. `Ptr Byte` is the canonical `void*` analogue.
-See semantics/09_FFI.md §9 for type mapping and safety rules.
+See [semantics/09_FFI.md §9](semantics/09_FFI.md#9-ffi--foreign-function-interface) for type mapping and safety rules.
 
 ---
 
@@ -376,4 +376,4 @@ How surface constructs and hook forms desugar to Core:
 ## 11. Open Questions
 
 Backend-related questions (effect lowering, coercion nodes, Loop IR) are tracked
-in [BACKEND.md §8](./BACKEND.md).
+in [BACKEND.md §8](BACKEND.md#8-open-questions).

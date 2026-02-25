@@ -1,7 +1,7 @@
 # Loop IR
 
 Loop IR is a structured loop representation that sits between the fusion passes
-(BACKEND.md §2) and C emission (BACKEND.md §5). Its purpose is to express SIMD
+([BACKEND.md §2](BACKEND.md#2-whole-program-passes)) and C emission ([BACKEND.md §5](BACKEND.md#5-c-emission)). Its purpose is to express SIMD
 width parametricity, accumulator register conventions, predicated execution,
 tiling, and unrolling as first-class nodes — making these properties explicit
 and transformable before any C is emitted.
@@ -20,9 +20,9 @@ Core IR
 
 Loop IR only receives **pure, fused** operation chains — effect row `e = ⟪⟫`,
 all dispatch resolved, all types monomorphic. Effectful operations pass through
-unchanged to generic C emission (BACKEND.md §5).
+unchanged to generic C emission ([BACKEND.md §5](BACKEND.md#5-c-emission)).
 
-The kernel library (BACKEND.md §6) remains the ground truth for performance.
+The kernel library ([BACKEND.md §6](BACKEND.md#6-primitive-kernel-library)) remains the ground truth for performance.
 The long-term goal of Loop IR is to generate code that matches or beats the
 hand-written kernels automatically for any fused pattern, not just the patterns
 in the initial library. The QCheck property for Loop IR coverage: for every
@@ -64,7 +64,7 @@ Accum {
 ```
 
 Multiple accumulators on a single loop represent horizontally fused folds
-(BACKEND.md §2.4 horizontal fusion). The accumulator tuple is a single register
+([BACKEND.md §2.4](BACKEND.md#24-layer-2--soac-fusion) horizontal fusion). The accumulator tuple is a single register
 group; the C emitter assigns one accumulator variable per entry.
 
 ### 1.3 Vectorized Loop
@@ -118,7 +118,7 @@ last resort for non-SIMD targets.
 ### 1.5 Loop Range
 
 A loop range is either a closed integer interval or a Range-typed descriptor
-(from `Range Int` source arrays — see semantics/02_TYPES.md §2.1). Range
+(from `Range Int` source arrays — see [semantics/02_TYPES.md §2.1](semantics/02_TYPES.md#21-base-types-and-array-types)). Range
 sources map directly to loop bounds without allocation.
 
 ```
@@ -211,7 +211,7 @@ The target capability set is determined once at program startup (CPUID on x86,
 HWCAP on ARM) and stored as a constant for the compilation. Lowering is
 **not** a runtime dispatch — the Loop IR is lowered to a specific concrete
 width for each compilation target. Runtime dispatch between SIMD code paths
-happens at the kernel library level (BACKEND.md §6), not within a single Loop
+happens at the kernel library level ([BACKEND.md §6](BACKEND.md#6-primitive-kernel-library)), not within a single Loop
 IR lowering.
 
 **Width resolution table:**
@@ -230,7 +230,7 @@ Bool (bit-packed) arrays use a separate lane model: one SIMD register holds
 
 ## 4. Relationship to the Kernel Library
 
-The kernel library (BACKEND.md §6) is the **ground truth** for Loop IR
+The kernel library ([BACKEND.md §6](BACKEND.md#6-primitive-kernel-library)) is the **ground truth** for Loop IR
 correctness and performance. Every fused pattern covered by the kernel library
 is also a target for Loop IR:
 
@@ -243,7 +243,7 @@ is also a target for Loop IR:
 | `'map f >> 'map g` | `VecLoop` with composed body (from Layer 1 map fusion) |
 | `'zip >> 'map f` | `Zip` inside `VecLoop` |
 
-**Validation:** the QCheck harness (BACKEND.md §7) gains a new property suite
+**Validation:** the QCheck harness ([BACKEND.md §7](BACKEND.md#7-qcheck-harness)) gains a new property suite
 for Loop IR: for every kernel-covered pattern, Loop IR lowered output must
 match kernel output across element types, array sizes, and SIMD code paths.
 Kernel output is the oracle; Loop IR output is the subject.

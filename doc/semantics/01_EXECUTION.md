@@ -43,7 +43,7 @@ sees all modules simultaneously, enabling:
 **Specialization and hook resolution are independent.** Specialization
 instantiates type variables with concrete types; it does not change which
 hook is in scope at a call site. Hook resolution uses the importing
-module's scope (08_MODULES.md §8.5). Specialization runs after resolution, filling in
+module's scope ([08_MODULES.md §8.5](08_MODULES.md#85-modules-as-coherence-boundaries)). Specialization runs after resolution, filling in
 concrete types for the already-resolved hook.
 
 **Incremental compilation**: modules are the unit of invalidation. When a

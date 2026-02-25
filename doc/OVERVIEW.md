@@ -56,7 +56,7 @@ Arra draws heavily from prior work. The following is a precise accounting.
 
 **Haskell** — traits are typeclasses. The `∀ ⇒` constraint syntax, and kind system, are all Haskell-derived. The specificity ordering in hook resolution is a restricted form of instance resolution.
 
-**Ur/Web** — row polymorphism and typeclass plus module complementation.
+**Ur/Web** — the record row type system: open records with row variables (`{x: Int | r}`), disjoint row concatenation (`A ++ B`, statically checked to share no field names), and field removal (`A - .field`). The treatment of typeclass constraints as anonymous records of function pointers — so instances are values, not implicit — also comes from Ur/Web, and is why trait resolution in Arra composes cleanly with the module system rather than requiring a separate coherence mechanism.
 
 **Koka** — the algebraic effect system with row-typed effects, the `ctl`/`op` distinction between non-resumable and resumable operations, and the effect-polymorphic function types are taken directly from Koka.
 
